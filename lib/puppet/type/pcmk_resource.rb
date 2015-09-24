@@ -139,6 +139,8 @@ module Puppet
 
       munge do |value|
         resource.stringify_data value
+        value = resource.stringify_data value
+        resource.munge_meta_attributes value
       end
 
       def insync?(is)
@@ -158,6 +160,8 @@ module Puppet
 
       munge do |value|
         resource.stringify_data value
+        value = resource.stringify_data value
+        resource.munge_meta_attributes value
       end
 
       def insync?(is)

@@ -115,6 +115,7 @@ module Pacemaker
           complex_meta_attributes = primitive.parent.elements['meta_attributes']
           if complex_meta_attributes
             complex_meta_attributes_structure = children_elements_to_hash complex_meta_attributes, 'name', 'nvpair'
+            complex_meta_attributes_structure = munge_meta_attributes complex_meta_attributes_structure
             complex_structure.store 'meta_attributes', complex_meta_attributes_structure
           end
 
@@ -131,18 +132,53 @@ module Pacemaker
         meta_attributes = primitive.elements['meta_attributes']
         if meta_attributes
           meta_attributes_structure = children_elements_to_hash meta_attributes, 'name', 'nvpair'
+          meta_attributes_structure = munge_meta_attributes meta_attributes_structure
           primitive_structure.store 'meta_attributes', meta_attributes_structure
         end
 
         operations = primitive.elements['operations']
         if operations
-          operations_structure = children_elements_to_hash operations, 'id', 'op'
+          operations_structure = parse_operations operations
           primitive_structure.store 'operations', operations_structure
         end
 
         @primitives_structure.store id, primitive_structure
       end
       @primitives_structure
+    end
+
+    def parse_operations(operations_element)
+      return unless operations_element.is_a? REXML::Element
+      operations = {}
+      ops = operations_element.get_elements 'op'
+      return operations unless ops.any?
+      ops.each do |op|
+        op_structure = attributes_to_hash op
+        id = op_structure['id']
+        next unless id
+        instance_attributes = op.elements['instance_attributes']
+        if instance_attributes
+          instance_attributes_structure = children_elements_to_hash instance_attributes, 'name', 'nvpair'
+          if instance_attributes_structure.key? 'OCF_CHECK_LEVEL'
+            value = instance_attributes_structure.fetch('OCF_CHECK_LEVEL', {}).fetch('value', nil)
+            op_structure['OCF_CHECK_LEVEL'] = value if value  
+          end
+        end
+        operations.store id, op_structure
+      end
+      operations
+    end
+
+    # remove status related meta attributes
+    # @param attributes_from [Hash]
+    # @return [Hash]
+    def munge_meta_attributes(attributes_from)
+      attributes_to = {}
+      attributes_from.each do |name, parameters|
+        next if %w(target-role is-managed).include? name
+        attributes_to.store name, parameters
+        end
+      attributes_to
     end
 
     # check if primitive exists in the confiuguration
@@ -257,7 +293,20 @@ module Pacemaker
       if data['operations'].respond_to? :each and data['operations'].any?
         operations_document = xml_document 'operations', primitive_element
         sort_data(data['operations']).each do |operation|
-          operation_element = xml_element 'op', operation
+          operation_element = xml_element 'op', operation, %w(OCF_CHECK_LEVEL)
+          if operation.key? 'OCF_CHECK_LEVEL'
+            instance_attributes_document = xml_document 'instance_attributes', operation_element
+            instance_attributes_id = operation['id'] + '-instance_attributes'
+            instance_attributes_document.add_attribute 'id', instance_attributes_id
+            ocf_check_level_id = instance_attributes_id + '-OCF_CHECK_LEVEL'
+            ocf_check_level_structure = {
+              'id' => ocf_check_level_id,
+              'name' => 'OCF_CHECK_LEVEL',
+              'value' => operation['OCF_CHECK_LEVEL'],
+            }
+            ocf_check_level_element = xml_element 'nvpair', ocf_check_level_structure 
+            instance_attributes_document.add_element ocf_check_level_element if ocf_check_level_element
+          end
           operations_document.add_element operation_element if operation_element
         end
       end

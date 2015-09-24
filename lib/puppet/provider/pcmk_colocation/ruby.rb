@@ -51,7 +51,9 @@ Puppet::Type.type(:pcmk_colocation).provide(:ruby, :parent => Puppet::Provider::
     target_structure[:name ] = data['id'] if data['id']
     target_structure[:ensure] = :present
     target_structure[:first] = data['with-rsc'] if data['with-rsc']
+    target_structure[:first] += ":#{data['with-rsc-role']}" if data['with-rsc-role']
     target_structure[:second] = data['rsc'] if data['rsc']
+    target_structure[:second] += ":#{data['rsc-role']}" if data['rsc-role']
     target_structure[:score] = data['score'] if data['score']
   end
 
@@ -131,16 +133,22 @@ Puppet::Type.type(:pcmk_colocation).provide(:ruby, :parent => Puppet::Provider::
     debug "Call: flush on '#{resource}'"
     return unless property_hash and property_hash.any?
 
+    unless property_hash[:name] and property_hash[:score] and property_hash[:first] and property_hash[:second]
+      fail "Data does not contain all the required fields!"
+    end
+
     colocation_structure = {}
     colocation_structure['id'] = property_hash[:name]
     colocation_structure['score'] = property_hash[:score]
-    colocation_structure['rsc'] = property_hash[:second]
-    colocation_structure['with-rsc'] = property_hash[:first]
 
-    unless colocation_structure['id'] and colocation_structure['score'] and
-        colocation_structure['rsc'] and colocation_structure['with-rsc']
-      fail "Data does not contain all the required fields #{colocation_structure.inspect} at '#{resource}'"
-    end
+    first_element_array = property_hash[:first].split ':'
+    second_element_array = property_hash[:second].split ':'
+    
+    colocation_structure['rsc'] = second_element_array[0]
+    colocation_structure['rsc-role'] = second_element_array[1] if second_element_array[1]
+    colocation_structure['with-rsc'] = first_element_array[0]
+    colocation_structure['with-rsc-role'] = first_element_array[1] if first_element_array[1]
+
 
     colocation_patch = xml_document
     colocation_element = xml_rsc_colocation colocation_structure
@@ -154,3 +162,4 @@ Puppet::Type.type(:pcmk_colocation).provide(:ruby, :parent => Puppet::Provider::
     cluster_debug_report "#{resource} flush"
   end
 end
+

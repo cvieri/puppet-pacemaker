@@ -321,7 +321,7 @@ Puppet::Type.type(:pcmk_resource).provide(:ruby, :parent => Puppet::Provider::Pa
         end
         unless operation['id']
           # there is no id provided, generate it
-          id_components = [property_hash[:name], operation['name'], operation['role'], operation['interval']]
+          id_components = [property_hash[:name], operation['name'], operation['interval']]
           id_components.reject! { |v| v.nil? }
           operation['id'] = id_components.join '-'
         end

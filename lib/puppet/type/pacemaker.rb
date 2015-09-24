@@ -41,6 +41,14 @@ module Puppet::Type::Pacemaker
       operation.each do |operation_name, operation_data|
         next unless operation_data.is_a? Hash
         operation_structure = {}
+        if operation_name.include? ':'
+          operation_name_array = operation_name.split(':')
+          operation_name = operation_name_array[0]
+          if not operation_data['role'] and operation_name_array[1]
+            operation_data['role'] = operation_name_array[1]
+          end
+        end
+
         operation_structure['name'] = operation_name
         operation_structure.merge! operation_data
         operations_to << operation_structure if operation_structure.any?
@@ -104,6 +112,18 @@ module Puppet::Type::Pacemaker
     result = is == should
     debug "compare_operations: #{result}"
     result
+  end
+
+  # remove status related meta attributes
+  # @param attributes_from [Hash]
+  # @return [Hash]
+  def munge_meta_attributes(attributes_from)
+    attributes_to = {}
+    attributes_from.each do |name, parameters|
+      next if %w(target-role is-managed).include? name
+      attributes_to.store name, parameters
+    end
+    attributes_to
   end
 
   # normalize a single location rule
