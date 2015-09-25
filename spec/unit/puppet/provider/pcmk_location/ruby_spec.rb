@@ -20,6 +20,23 @@ describe Puppet::Type.type(:pcmk_location).provider(:ruby) do
   before(:each) do
     puppet_debug_override
     provider.stubs(:cluster_debug_report).returns(true)
+    provider.stubs(:primitive_exists?).with('my_primitive').returns(true)
+  end
+
+  describe('#validation') do
+    it 'should fail if there is no primitive in the CIB' do
+      provider.stubs(:primitive_exists?).with('my_primitive').returns(false)
+      provider.create
+      expect { provider.flush }.to raise_error "Primitive 'my_primitive' does not exist!"
+    end
+
+    it 'should fail if there are neither rules nor node and score set' do
+      provider.create
+      provider.rules = nil
+      provider.node = nil
+      provider.score = nil
+      expect { provider.flush }.to raise_error 'Data does not contain all the required fields!'
+    end
   end
 
   context '#create' do

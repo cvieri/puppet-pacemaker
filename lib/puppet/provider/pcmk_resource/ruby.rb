@@ -1,4 +1,4 @@
-require File.join File.dirname(__FILE__), '../pacemaker/provider'
+require File.join File.dirname(__FILE__), '../../pacemaker/provider'
 
 Puppet::Type.type(:pcmk_resource).provide(:ruby, :parent => Puppet::Provider::Pacemaker) do
   desc 'Specific provider for a rather specific type since I currently have no
@@ -15,7 +15,7 @@ Puppet::Type.type(:pcmk_resource).provide(:ruby, :parent => Puppet::Provider::Pa
   commands :crm_resource => 'crm_resource'
   commands :crm_attribute => 'crm_attribute'
 
-  # TODO: utilization
+  defaultfor :kernel => 'Linux'
 
   attr_accessor :property_hash
   attr_accessor :resource
@@ -81,7 +81,7 @@ Puppet::Type.type(:pcmk_resource).provide(:ruby, :parent => Puppet::Provider::Pa
   end
 
   # retrieve data from library to the target_structure
-  # @params data [Hash] extracted primitive data
+  # @param data [Hash] extracted primitive data
   # will extract the current primitive data unless a value is provided
   # @param target_structure [Hash] copy data to this structure
   # defaults to the property_hash of this provider
@@ -126,7 +126,7 @@ Puppet::Type.type(:pcmk_resource).provide(:ruby, :parent => Puppet::Provider::Pa
   end
 
   def exists?
-    debug "Call: exists? on '#{resource}'"
+    debug 'Call: exists?'
     out = primitive_exists? resource[:name]
     retrieve_data
     debug "Return: #{out}"
@@ -146,7 +146,7 @@ Puppet::Type.type(:pcmk_resource).provide(:ruby, :parent => Puppet::Provider::Pa
   # Create just adds our resource to the property_hash and flush will take care
   # of actually doing the work.
   def create
-    debug "Call: create on '#{resource}'"
+    debug 'Call: create'
     self.property_hash = {
         :ensure => :absent,
     }
@@ -179,7 +179,7 @@ Puppet::Type.type(:pcmk_resource).provide(:ruby, :parent => Puppet::Provider::Pa
   # Unlike create we actually immediately delete the item.  Corosync forces us
   # to "stop" the primitive before we are able to remove it.
   def destroy
-    debug "Call: destroy on '#{resource}'"
+    debug 'Call: destroy'
     remove_primitive
     property_hash.clear
     cluster_debug_report "#{resource} destroy"
@@ -270,7 +270,7 @@ Puppet::Type.type(:pcmk_resource).provide(:ruby, :parent => Puppet::Provider::Pa
   # operations and parameters hash to eventually flatten them into a string
   # that can be used by the crm command.
   def flush
-    debug "Call: flush on '#{resource}'"
+    debug 'Call: flush'
     return unless property_hash and property_hash.any?
 
     if property_hash[:complex_metadata] and not property_hash[:complex_type]

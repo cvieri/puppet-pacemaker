@@ -12,10 +12,6 @@ describe Puppet::Type.type(:service).provider(:pacemaker) do
     resource.provider
   end
 
-  before(:each) do
-    puppet_debug_override
-  end
-
   let(:title) { 'myservice' }
   let(:full_name) { 'clone-p_myservice' }
   let(:name) { 'p_myservice' }
@@ -284,5 +280,3 @@ describe Puppet::Type.type(:service).provider(:pacemaker) do
   end
 
 end
-
-#TODO: spec should check configured behaviour instead of default one

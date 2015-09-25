@@ -24,7 +24,7 @@ describe Puppet::Type.type(:pcmk_resource) do
       expect(instance).to_not be_nil
     end
 
-    [:name, :cib].each do |param|
+    [:name].each do |param|
       it "should have a #{param} parameter" do
         expect(subject.validparameter?(param)).to be_truthy
       end
@@ -69,35 +69,6 @@ describe Puppet::Type.type(:pcmk_resource) do
         }.to raise_error(Puppet::Error, /(master|clone|\'\')/)
       end
     end
-  end
-
-  describe 'when autorequiring resources' do
-
-    before :each do
-      @shadow = Puppet::Type.type(:pcmk_shadow).new(
-          :name => 'baz',
-          :cib => 'baz',
-      )
-      @catalog = Puppet::Resource::Catalog.new
-      @catalog.add_resource @shadow
-      instance[:cib] = 'baz'
-    end
-
-    it 'should autorequire the corresponding resources' do
-      @catalog.add_resource instance
-      req = instance.autorequire
-      expect(req.size).to eq(1)
-      [req[0].target, req[0].source].each do |rec_instance|
-        class << rec_instance
-          def should(*args)
-            Object.instance_method(:should).bind(self).call(*args)
-          end
-        end
-      end
-      expect(req[0].target).to eql(instance)
-      expect(req[0].source).to eql(@shadow)
-    end
-
   end
 
   describe 'munging of input data' do

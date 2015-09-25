@@ -1,4 +1,5 @@
-require File.join File.dirname(__FILE__), 'pacemaker'
+require 'puppet/parameter/boolean'
+require File.join File.dirname(__FILE__), '../pacemaker/type'
 
 module Puppet
   newtype(:pcmk_location) do
@@ -8,7 +9,7 @@ module Puppet
       * http://www.clusterlabs.org/doc/en-US/Pacemaker/1.1/html/Clusters_from_Scratch/_ensuring_resources_run_on_the_same_host.html)
 
     ensurable
-    include Puppet::Type::Pacemaker
+    include Pacemaker::Type
 
     newparam(:name) do
       desc %q(Identifier of the location entry.  This value needs to be unique
@@ -17,19 +18,13 @@ module Puppet
       isnamevar
     end
 
-    newproperty(:primitive) do
-      desc %q(Corosync primitive being managed.)
+    newparam(:debug, :boolean => true, :parent => Puppet::Parameter::Boolean) do
+      desc %q(Don't actually make changes)
+      defaultto false
     end
 
-    newparam(:cib) do
-      desc %q(Corosync applies its configuration immediately. Using a CIB allows
-        you to group multiple primitives and relationships to be applied at
-        once. This can be necessary to insert complex configurations into
-        Corosync correctly.
-
-        This paramater sets the CIB this location should be created in. A
-        cs_shadow resource with a title of the same name as this value should
-        also be added to your manifest.)
+    newproperty(:primitive) do
+      desc %q(Corosync primitive being managed.)
     end
 
     newproperty(:score) do
@@ -63,14 +58,19 @@ module Puppet
         resource.insync_debug is, should, 'rules'
         super
       end
+
+      def is_to_s(is)
+        resource.inspect_to_s is
+      end
+
+      def should_to_s(should)
+        resource.inspect_to_s should
+      end
+
     end
 
     newproperty(:node) do
       desc %q(The node for which to apply node score)
-    end
-
-    autorequire(:pcmk_shadow) do
-      [parameter(:cib).value] if parameter :cib
     end
 
     autorequire(:service) do
@@ -78,7 +78,10 @@ module Puppet
     end
 
     autorequire(:pcmk_resource) do
-      [parameter(:primitive).value] if parameter :primitive
+      resources = []
+      resources << primitive_base_name(self[:primitive]) if self[:primitive]
+      debug "Autorequire pcmk_resources: #{resources.join ', '}" if resources.any?
+      resources
     end
 
   end

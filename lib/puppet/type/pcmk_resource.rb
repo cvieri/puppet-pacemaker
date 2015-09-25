@@ -1,4 +1,5 @@
-require File.join File.dirname(__FILE__), 'pacemaker'
+require 'puppet/parameter/boolean'
+require File.join File.dirname(__FILE__), '../pacemaker/type'
 
 module Puppet
   newtype(:pcmk_resource) do
@@ -18,13 +19,18 @@ module Puppet
       * http://www.clusterlabs.org/doc/en-US/Pacemaker/1.1/html/Clusters_from_Scratch/_adding_a_resource.html)
 
     ensurable
-    include Puppet::Type::Pacemaker
+    include Pacemaker::Type
 
     newparam(:name) do
       desc %q(Name identifier of primitive.  This value needs to be unique
         across the entire Corosync/Pacemaker configuration since it doesn't have
         the concept of name spaces per type.)
       isnamevar
+    end
+
+    newparam(:debug, :boolean => true, :parent => Puppet::Parameter::Boolean) do
+      desc %q(Don't actually make changes)
+      defaultto false
     end
 
     newproperty(:primitive_class) do
@@ -58,17 +64,6 @@ module Puppet
       isrequired
     end
 
-    newparam(:cib) do
-      desc %q(Corosync applies its configuration immediately. Using a CIB allows
-        you to group multiple primitives and relationships to be applied at
-        once. This can be necessary to insert complex configurations into
-        Corosync correctly.
-
-        This paramater sets the CIB this primitive should be created in. A
-        cs_shadow resource with a title of the same name as this value should
-        also be added to your manifest.)
-    end
-
     # Our parameters and operations properties must be hashes.
     newproperty(:parameters) do
       desc %q(A hash of params for the primitive.  Parameters in a primitive are
@@ -82,6 +77,14 @@ module Puppet
         unless value.is_a? Hash
           fail 'Parameters property must be a hash'
         end
+      end
+
+      def is_to_s(is)
+        resource.inspect_to_s is
+      end
+
+      def should_to_s(should)
+        resource.inspect_to_s should
       end
 
       def insync?(is)
@@ -118,6 +121,14 @@ module Puppet
         @should = resource.munge_operations @should
       end
 
+      def is_to_s(is)
+        resource.inspect_to_s is
+      end
+
+      def should_to_s(should)
+        resource.inspect_to_s should
+      end
+
       def insync?(is)
         resource.insync_debug is, should, 'operations'
         resource.compare_operations is, should
@@ -143,6 +154,14 @@ module Puppet
         resource.munge_meta_attributes value
       end
 
+      def is_to_s(is)
+        resource.inspect_to_s is
+      end
+
+      def should_to_s(should)
+        resource.inspect_to_s should
+      end
+
       def insync?(is)
         resource.insync_debug is, should, 'metadata'
         resource.compare_meta_attributes is, should
@@ -164,6 +183,14 @@ module Puppet
         resource.munge_meta_attributes value
       end
 
+      def is_to_s(is)
+        resource.inspect_to_s is
+      end
+
+      def should_to_s(should)
+        resource.inspect_to_s should
+      end
+
       def insync?(is)
         resource.insync_debug is, should, 'complex_metadata'
         resource.compare_meta_attributes is, should
@@ -179,10 +206,6 @@ module Puppet
         by default')
 
       newvalues 'clone', 'master'
-    end
-
-    autorequire(:pcmk_shadow) do
-      [parameter(:cib).value] if parameter :cib
     end
 
     autorequire(:service) do

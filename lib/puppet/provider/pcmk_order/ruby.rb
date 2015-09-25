@@ -1,4 +1,4 @@
-require File.join File.dirname(__FILE__), '../pacemaker/provider'
+require File.join File.dirname(__FILE__), '../../pacemaker/provider'
 
 Puppet::Type.type(:pcmk_order).provide(:ruby, :parent => Puppet::Provider::Pacemaker) do
   desc 'Specific provider for a rather specific type since I currently have no plan to
@@ -12,7 +12,7 @@ Puppet::Type.type(:pcmk_order).provide(:ruby, :parent => Puppet::Provider::Pacem
   commands :crm_resource => 'crm_resource'
   commands :crm_attribute => 'crm_attribute'
 
-  #TODO fail if there is no primitive
+  defaultfor :kernel => 'Linux'
 
   attr_accessor :property_hash
   attr_accessor :resource
@@ -43,7 +43,7 @@ Puppet::Type.type(:pcmk_order).provide(:ruby, :parent => Puppet::Provider::Pacem
   end
 
   # retrieve data from library to the target_structure
-  # @params data [Hash] extracted order data
+  # @param data [Hash] extracted order data
   # will extract the current order data unless a value is provided
   # @param target_structure [Hash] copy data to this structure
   # defaults to the property_hash of this provider
@@ -57,7 +57,7 @@ Puppet::Type.type(:pcmk_order).provide(:ruby, :parent => Puppet::Provider::Pacem
   end
 
   def exists?
-    debug "Call: exists? on '#{resource}'"
+    debug 'Call: exists?'
     out = constraint_order_exists? resource[:name]
     retrieve_data
     debug "Return: #{out}"
@@ -73,7 +73,7 @@ Puppet::Type.type(:pcmk_order).provide(:ruby, :parent => Puppet::Provider::Pacem
   # Create just adds our resource to the property_hash and flush will take care
   # of actually doing the work.
   def create
-    debug "Call: create on '#{resource}'"
+    debug 'Call: create'
     self.property_hash = {
         :name => resource[:name],
         :ensure => :absent,
@@ -85,7 +85,7 @@ Puppet::Type.type(:pcmk_order).provide(:ruby, :parent => Puppet::Provider::Pacem
 
   # Unlike create we actually immediately delete the item.
   def destroy
-    debug "Call: destroy on '#{resource}'"
+    debug 'Call: destroy'
     constraint_order_remove resource[:name]
     property_hash.clear
     cluster_debug_report "#{resource} destroy"
@@ -126,19 +126,26 @@ Puppet::Type.type(:pcmk_order).provide(:ruby, :parent => Puppet::Provider::Pacem
   # the updates that need to be made.  The temporary file is then used
   # as stdin for the crm command.
   def flush
-    debug "Call: flush on '#{resource}'"
+    debug 'Call: flush'
     return unless property_hash and property_hash.any?
+
+    unless primitive_exists? primitive_base_name property_hash[:first]
+      fail "Primitive '#{property_hash[:first]}' does not exist!"
+    end
+
+    unless primitive_exists? primitive_base_name property_hash[:second]
+      fail "Primitive '#{property_hash[:second]}' does not exist!"
+    end
+
+    unless property_hash[:name] and property_hash[:score] and property_hash[:first] and property_hash[:second]
+      fail 'Data does not contain all the required fields!'
+    end
 
     order_structure = {}
     order_structure['id'] = property_hash[:name]
     order_structure['score'] = property_hash[:score]
     order_structure['first'] = property_hash[:first]
     order_structure['then'] = property_hash[:second]
-
-    unless order_structure['id'] and order_structure['score'] and
-        order_structure['first'] and order_structure['then']
-      fail "Data does not contain all the required fields #{order_structure.inspect} at '#{resource}'"
-    end
 
     order_patch = xml_document
     order_element = xml_rsc_order order_structure

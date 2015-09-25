@@ -24,7 +24,7 @@ describe Puppet::Type.type(:pcmk_operation_default) do
       ).to_not be_nil
     end
 
-    [:cib, :name ].each do |param|
+    [:name ].each do |param|
       it "should have a #{param} parameter" do
         expect(subject.validparameter?(param)).to be_truthy
       end

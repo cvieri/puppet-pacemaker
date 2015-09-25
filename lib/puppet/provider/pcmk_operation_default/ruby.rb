@@ -1,4 +1,4 @@
-require File.join File.dirname(__FILE__), '../pacemaker/provider'
+require File.join File.dirname(__FILE__), '../../pacemaker/provider'
 
 Puppet::Type.type(:pcmk_operation_default).provide(:ruby, :parent => Puppet::Provider::Pacemaker) do
   desc 'Specific operation_default for a rather specific type since I currently have no plan to
@@ -10,6 +10,8 @@ Puppet::Type.type(:pcmk_operation_default).provide(:ruby, :parent => Puppet::Pro
   commands :crm_node => 'crm_node'
   commands :crm_resource => 'crm_resource'
   commands :crm_attribute => 'crm_attribute'
+
+  defaultfor :kernel => 'Linux'
 
   attr_accessor :property_hash
   attr_accessor :resource
@@ -42,7 +44,7 @@ Puppet::Type.type(:pcmk_operation_default).provide(:ruby, :parent => Puppet::Pro
   end
 
   def exists?
-    debug "Call: exists? on '#{resource}'"
+    debug 'Call: exists?'
     out = operation_default_defined? resource[:name]
     debug "Return: #{out}"
     out
@@ -55,17 +57,17 @@ Puppet::Type.type(:pcmk_operation_default).provide(:ruby, :parent => Puppet::Pro
   end
 
   def create
-    debug "Call: create on '#{resource}'"
+    debug 'Call: create'
     self.value = resource[:value]
   end
 
   def destroy
-    debug "Call: destroy on '#{resource}'"
+    debug 'Call: destroy'
     operation_default_delete resource[:name]
   end
 
   def value
-    debug "Call: value on '#{resource}'"
+    debug 'Call: value'
     return property_hash[:value] if property_hash[:value]
     out = resource_operation_value resource[:name]
     debug "Return: #{out}"
@@ -73,7 +75,7 @@ Puppet::Type.type(:pcmk_operation_default).provide(:ruby, :parent => Puppet::Pro
   end
 
   def value=(should)
-    debug "Call: value=#{should} on '#{resource}'"
+    debug "Call: value=#{should}"
     operation_default_set resource[:name], should
   end
 

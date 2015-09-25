@@ -29,7 +29,7 @@ describe Puppet::Type.type(:pcmk_location) do
       ).to_not be_nil
     end
 
-    [:cib, :name].each do |param|
+    [:name].each do |param|
       it "should have a #{param} parameter" do
         expect(subject.validparameter?(param)).to be_truthy
       end
@@ -201,38 +201,5 @@ describe Puppet::Type.type(:pcmk_location) do
       end
     end
   end
-
-  describe 'when autorequiring resources' do
-    before :each do
-      @pcmk_resource = Puppet::Type.type(:pcmk_resource).new(
-          :name => 'foo',
-          :ensure => :present
-      )
-      @pcmk_shadow = Puppet::Type.type(:pcmk_shadow).new(
-          :name => 'baz',
-          :cib => 'baz'
-      )
-      @catalog = Puppet::Resource::Catalog.new
-      @catalog.add_resource @pcmk_shadow, @pcmk_resource
-    end
-
-    it 'should autorequire the corresponding resources' do
-      @resource = described_class.new(
-          :name => 'mock_resource',
-          :primitive => 'foo',
-          :node => 'node',
-          :score => '100',
-          :cib => 'baz'
-      )
-      @catalog.add_resource @resource
-      required_resources = @resource.autorequire
-      expect(required_resources.size).to eq 2
-      required_resources.each do |e|
-        expect(e.target).to eq(@resource)
-        expect([@pcmk_resource, @pcmk_shadow]).to include e.source
-      end
-    end
-  end
-
 
 end

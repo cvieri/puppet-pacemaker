@@ -14,7 +14,7 @@ require File.join base, 'provider'
 # id you want to debug the code without Pacemaker running.
 
 class Puppet::Provider::Pacemaker
-  [:cibadmin, :crm_attribute, :crm_node, :crm_resource, :crm_attribute, :crm_shadow].each do |tool|
+  [:cibadmin, :crm_attribute, :crm_node, :crm_resource, :crm_attribute].each do |tool|
     define_method(tool) do |*args|
       command = [tool.to_s] + args
       if Puppet::Util::Execution.respond_to? :execute

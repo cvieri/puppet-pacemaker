@@ -1,4 +1,4 @@
-require File.join File.dirname(__FILE__), '../pacemaker/provider'
+require File.join File.dirname(__FILE__), '../../pacemaker/provider'
 
 Puppet::Type.type(:service).provide(:pacemaker, :parent => Puppet::Provider::Pacemaker) do
 

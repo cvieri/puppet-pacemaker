@@ -1,4 +1,4 @@
-require File.join File.dirname(__FILE__), '../pacemaker/provider'
+require File.join File.dirname(__FILE__), '../../pacemaker/provider'
 
 Puppet::Type.type(:pcmk_location).provide(:ruby, :parent => Puppet::Provider::Pacemaker) do
   desc %q(Specific provider for a rather specific type since I currently have no plan to
@@ -12,9 +12,7 @@ Puppet::Type.type(:pcmk_location).provide(:ruby, :parent => Puppet::Provider::Pa
   commands :crm_resource => 'crm_resource'
   commands :crm_attribute => 'crm_attribute'
 
-  #TODO date_expressions
-  #TODO fail if there is no primitive
-  #TODO rules format/validation
+  defaultfor :kernel => 'Linux'
 
   attr_accessor :property_hash
   attr_accessor :resource
@@ -45,7 +43,7 @@ Puppet::Type.type(:pcmk_location).provide(:ruby, :parent => Puppet::Provider::Pa
   end
 
   # retrieve data from library to the target_structure
-  # @params data [Hash] extracted location data
+  # @param data [Hash] extracted location data
   # will extract the current location data unless a value is provided
   # @param target_structure [Hash] copy data to this structure
   # defaults to the property_hash of this provider
@@ -61,7 +59,7 @@ Puppet::Type.type(:pcmk_location).provide(:ruby, :parent => Puppet::Provider::Pa
   end
 
   def exists?
-    debug "Call: exists? on '#{resource}'"
+    debug 'Call: exists?'
     out = constraint_location_exists? resource[:name]
     retrieve_data
     debug "Return: #{out}"
@@ -77,7 +75,7 @@ Puppet::Type.type(:pcmk_location).provide(:ruby, :parent => Puppet::Provider::Pa
   # Create just adds our resource to the property_hash and flush will take care
   # of actually doing the work.
   def create
-    debug "Call: create on '#{resource}'"
+    debug 'Call: create'
     self.property_hash = {
         :name => resource[:name],
         :ensure => :absent,
@@ -90,7 +88,7 @@ Puppet::Type.type(:pcmk_location).provide(:ruby, :parent => Puppet::Provider::Pa
 
   # Unlike create we actually immediately delete the item.
   def destroy
-    debug "Call: destroy on '#{resource}'"
+    debug 'Call: destroy'
     constraint_location_remove resource[:name]
     property_hash.clear
     cluster_debug_report "#{resource} destroy"
@@ -139,8 +137,17 @@ Puppet::Type.type(:pcmk_location).provide(:ruby, :parent => Puppet::Provider::Pa
   # the updates that need to be made.  The temporary file is then used
   # as stdin for the crm command.
   def flush
-    debug "Call: flush on '#{resource}'"
+    debug 'Call: flush'
     return unless property_hash and property_hash.any?
+
+    unless primitive_exists? primitive_base_name property_hash[:primitive]
+      fail "Primitive '#{property_hash[:primitive]}' does not exist!"
+    end
+
+    unless property_hash[:name] and property_hash[:primitive] and
+        (property_hash[:rules] or (property_hash[:score] and property_hash[:node]))
+      fail 'Data does not contain all the required fields!'
+    end
 
     location_structure = {}
     location_structure['id'] = property_hash[:name]
@@ -148,12 +155,6 @@ Puppet::Type.type(:pcmk_location).provide(:ruby, :parent => Puppet::Provider::Pa
     location_structure['score'] = property_hash[:score] if property_hash[:score]
     location_structure['node'] = property_hash[:node] if property_hash[:node]
     location_structure['rules'] = property_hash[:rules] if property_hash[:rules]
-
-    unless location_structure['id'] and location_structure['rsc'] and
-        location_structure['rules'] or
-        (location_structure['score'] and location_structure['node'])
-      fail "Data does not contain all the required fields #{location_structure.inspect} at '#{resource}'"
-    end
 
     location_patch = xml_document
     location_element = xml_rsc_location location_structure

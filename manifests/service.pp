@@ -20,7 +20,6 @@ define pacemaker::service (
   $ocf_script_file     = undef,
 
   $create_primitive    = true,
-  $cib                 = undef,
 ) {
   $service_name     = $name
 
@@ -56,7 +55,6 @@ define pacemaker::service (
       metadata           => $metadata,
       complex_metadata   => $complex_metadata,
       complex_type       => $complex_type,
-      cib                => $cib,
     }
   }
 

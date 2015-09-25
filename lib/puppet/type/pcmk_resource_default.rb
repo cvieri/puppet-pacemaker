@@ -1,3 +1,4 @@
+require 'puppet/parameter/boolean'
 module Puppet
   newtype(:pcmk_resource_default) do
     desc %q(Type for manipulating corosync/pacemaker configuration rsc_defaults.
@@ -22,15 +23,9 @@ module Puppet
       isnamevar
     end
 
-    newparam(:cib) do
-      desc %q(Corosync applies its configuration immediately. Using a CIB allows
-            you to group multiple primitives and relationships to be applied at
-            once. This can be necessary to insert complex configurations into
-            Corosync correctly.
-
-            This paramater sets the CIB this order should be created in. A
-            cs_shadow resource with a title of the same name as this value should
-            also be added to your manifest.)
+    newparam(:debug, :boolean => true, :parent => Puppet::Parameter::Boolean) do
+      desc %q(Don't actually make changes)
+      defaultto false
     end
 
     newproperty(:value) do
@@ -42,10 +37,6 @@ module Puppet
 
     autorequire(:service) do
       ['corosync']
-    end
-
-    autorequire(:pcmk_shadow) do
-      [parameter(:cib).value] if parameter :cib
     end
 
   end

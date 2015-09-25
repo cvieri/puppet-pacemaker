@@ -1,4 +1,4 @@
-require File.join File.dirname(__FILE__), '../pacemaker/provider'
+require File.join File.dirname(__FILE__), '../../pacemaker/provider'
 
 Puppet::Type.type(:pcmk_colocation).provide(:ruby, :parent => Puppet::Provider::Pacemaker) do
   desc %q(Specific provider for a rather specific type since I currently have no plan to
@@ -12,7 +12,7 @@ Puppet::Type.type(:pcmk_colocation).provide(:ruby, :parent => Puppet::Provider::
   commands :crm_resource => 'crm_resource'
   commands :crm_attribute => 'crm_attribute'
 
-  #TODO fail if there is no primitive
+  defaultfor :kernel => 'Linux'
 
   attr_accessor :property_hash
   attr_accessor :resource
@@ -43,7 +43,7 @@ Puppet::Type.type(:pcmk_colocation).provide(:ruby, :parent => Puppet::Provider::
   end
 
   # retrieve data from library to the target_structure
-  # @params data [Hash] extracted colocation data
+  # @param data [Hash] extracted colocation data
   # will extract the current colocation data unless a value is provided
   # @param target_structure [Hash] copy data to this structure
   # defaults to the property_hash of this provider
@@ -59,7 +59,7 @@ Puppet::Type.type(:pcmk_colocation).provide(:ruby, :parent => Puppet::Provider::
   end
 
   def exists?
-    debug "Call: exists? on '#{resource}'"
+    debug 'Call: exists?'
     out = constraint_colocation_exists? resource[:name]
     retrieve_data
     debug "Return: #{out}"
@@ -75,7 +75,7 @@ Puppet::Type.type(:pcmk_colocation).provide(:ruby, :parent => Puppet::Provider::
   # Create just adds our resource to the property_hash and flush will take care
   # of actually doing the work.
   def create
-    debug "Call: create on '#{resource}'"
+    debug 'Call: create'
     self.property_hash = {
         :name => resource[:name],
         :ensure => :absent,
@@ -87,7 +87,7 @@ Puppet::Type.type(:pcmk_colocation).provide(:ruby, :parent => Puppet::Provider::
 
   # Unlike create we actually immediately delete the item.
   def destroy
-    debug "Call: destroy on '#{resource}'"
+    debug 'Call: destroy'
     constraint_colocation_remove resource[:name]
     property_hash.clear
     cluster_debug_report "#{resource} destroy"
@@ -131,11 +131,19 @@ Puppet::Type.type(:pcmk_colocation).provide(:ruby, :parent => Puppet::Provider::
   # the updates that need to be made.  The temporary file is then used
   # as stdin for the crm command.
   def flush
-    debug "Call: flush on '#{resource}'"
+    debug 'Call: flush'
     return unless property_hash and property_hash.any?
 
     unless property_hash[:name] and property_hash[:score] and property_hash[:first] and property_hash[:second]
-      fail "Data does not contain all the required fields!"
+      fail 'Data does not contain all the required fields!'
+    end
+
+    unless primitive_exists? primitive_base_name property_hash[:first]
+      fail "Primitive '#{property_hash[:first]}' does not exist!"
+    end
+
+    unless primitive_exists? primitive_base_name property_hash[:second]
+      fail "Primitive '#{property_hash[:second]}' does not exist!"
     end
 
     colocation_structure = {}

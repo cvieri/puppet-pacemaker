@@ -1,12 +1,17 @@
+require 'puppet/parameter/boolean'
+require File.join File.dirname(__FILE__), '../pacemaker/type'
+
 module Puppet
   newtype(:pcmk_nodes) do
     desc %q(Add and remove cluster nodes)
+
+    include Pacemaker::Type
 
     newparam(:name) do
       isnamevar
     end
 
-    newparam(:debug) do
+    newparam(:debug, :boolean => true, :parent => Puppet::Parameter::Boolean) do
       desc %q(Don't actually make changes)
       defaultto false
     end
@@ -38,15 +43,16 @@ Corosync_nodes data structure:
       defaultto { @resource.set_corosync_nodes }
 
       def insync?(is)
+        resource.insync_debug is, should, 'corosync_nodes'
         is == should
       end
 
       def is_to_s(is)
-        is.inspect
+        resource.inspect_to_s is
       end
 
       def should_to_s(should)
-        should.inspect
+        resource.inspect_to_s should
       end
     end
 
@@ -62,15 +68,16 @@ Pacemaker_nodes data structure:
       defaultto { @resource.set_pacemaker_nodes }
 
       def insync?(is)
+        resource.insync_debug is, should, 'pacemaker_nodes'
         is == should
       end
 
       def is_to_s(is)
-        is.inspect
+        resource.inspect_to_s is
       end
 
       def should_to_s(should)
-        should.inspect
+        resource.inspect_to_s should
       end
     end
 

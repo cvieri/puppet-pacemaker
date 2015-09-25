@@ -17,6 +17,28 @@ describe Puppet::Type.type(:pcmk_order).provider(:ruby) do
   before(:each) do
     puppet_debug_override
     provider.stubs(:cluster_debug_report).returns(true)
+    provider.stubs(:primitive_exists?).with('p_1').returns(true)
+    provider.stubs(:primitive_exists?).with('p_2').returns(true)
+  end
+
+  describe('#validation') do
+    it 'should fail if there is no first primitive in the CIB' do
+      provider.stubs(:primitive_exists?).with('p_1').returns(false)
+      provider.create
+      expect { provider.flush }.to raise_error "Primitive 'p_1' does not exist!"
+    end
+
+    it 'should fail if there is no second primitive in the CIB' do
+      provider.stubs(:primitive_exists?).with('p_2').returns(false)
+      provider.create
+      expect { provider.flush }.to raise_error "Primitive 'p_2' does not exist!"
+    end
+
+    it 'should fail if there is no "score" set' do
+      resource.delete :score
+      provider.create
+      expect { provider.flush }.to raise_error 'Data does not contain all the required fields!'
+    end
   end
 
   describe '#update' do

@@ -24,7 +24,7 @@ describe Puppet::Type.type(:pcmk_property) do
       ).to_not be_nil
     end
 
-    [:cib, :name ].each do |param|
+    [:name ].each do |param|
       it "should have a #{param} parameter" do
         expect(subject.validparameter?(param)).to be_truthy
       end
@@ -40,30 +40,6 @@ describe Puppet::Type.type(:pcmk_property) do
 
     it 'should have documentation for its value property' do
       expect(subject.propertybyname(:value).doc).to be_a String
-    end
-  end
-
-  describe 'when autorequiring resources' do
-    before :each do
-      @pcmk_shadow = Puppet::Type.type(:pcmk_shadow).new(
-          :name => 'baz',
-          :cib => 'baz'
-      )
-      @catalog = Puppet::Resource::Catalog.new
-      @catalog.add_resource @pcmk_shadow
-    end
-
-    it 'should autorequire the corresponding resources' do
-      @resource = described_class.new(
-          :name => 'dummy',
-          :value => 'foo',
-          :cib => 'baz'
-      )
-      @catalog.add_resource @resource
-      required_resources = @resource.autorequire
-      expect(required_resources.size).to eq 1
-      expect(required_resources.first.target).to eq @resource
-      expect(required_resources.first.source).to eq @pcmk_shadow
     end
   end
 
