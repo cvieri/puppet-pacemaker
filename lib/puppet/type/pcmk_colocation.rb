@@ -70,10 +70,9 @@ module Puppet
 
     autorequire(:pcmk_resource) do
       resources = []
-      resources << self[:first] if self[:first]
-      resources << self[:second] if self[:second]
+      resources << self[:first].sub(/^clone_|^master_/, "") if self[:first]
+      resources << self[:second].sub(/^clone_|^master_/, "") if self[:second]
       resources
     end
-
   end
 end

@@ -62,6 +62,17 @@ Puppet::Type.type(:pcmk_colocation).provide(:ruby, :parent => Puppet::Provider::
     out = constraint_colocation_exists? resource[:name]
     retrieve_data
     debug "Return: #{out}"
+
+    if !out
+      debug "Call: exists? on '#{resource}'"
+      unless primitive_exists? resource[:second].sub(/^clone_|^master_/, "")
+        fail "Primitive #{resource[:second]} does not exist!"
+      end
+
+      unless primitive_exists? resource[:first].sub(/^clone_|^master_/, "")
+        fail "Primitive #{resource[:first]} does not exist!"
+      end
+    end
     out
   end
 
@@ -91,7 +102,6 @@ Puppet::Type.type(:pcmk_colocation).provide(:ruby, :parent => Puppet::Provider::
     property_hash.clear
     cluster_debug_report "#{resource} destroy"
   end
-
 
   # Getter that obtains the our score that should have been populated by
   # prefetch or instances (depends on if your using puppet resource or not).
