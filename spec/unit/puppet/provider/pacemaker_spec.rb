@@ -100,10 +100,6 @@ describe Puppet::Provider::Pacemaker do
                            {"id" => "master_p_rabbitmq-server-meta_attributes-ordered",
                             "name" => "ordered",
                             "value" => "false"},
-                       "target-role" =>
-                           {"id" => "master_p_rabbitmq-server-meta_attributes-target-role",
-                            "name" => "target-role",
-                            "value" => "Master"},
                        "master-max" =>
                            {"id" => "master_p_rabbitmq-server-meta_attributes-master-max",
                             "name" => "master-max",
@@ -136,7 +132,8 @@ describe Puppet::Provider::Pacemaker do
                       {"id" => "p_rabbitmq-server-monitor-30",
                        "interval" => "30",
                        "name" => "monitor",
-                       "timeout" => "60"},
+                       "timeout" => "60",
+                       "OCF_CHECK_LEVEL" => "30"},
                   "p_rabbitmq-server-start-0" =>
                       {"id" => "p_rabbitmq-server-start-0",
                        "interval" => "0",
@@ -650,7 +647,6 @@ describe Puppet::Provider::Pacemaker do
     <nvpair id='master_p_rabbitmq-server-meta_attributes-master-node-max' name='master-node-max' value='1'/>
     <nvpair id='master_p_rabbitmq-server-meta_attributes-notify' name='notify' value='true'/>
     <nvpair id='master_p_rabbitmq-server-meta_attributes-ordered' name='ordered' value='false'/>
-    <nvpair id='master_p_rabbitmq-server-meta_attributes-target-role' name='target-role' value='Master'/>
   </meta_attributes>
   <primitive class='ocf' id='p_rabbitmq-server' provider='mirantis' type='rabbitmq-server'>
     <instance_attributes id='p_rabbitmq-server-instance_attributes'>
@@ -663,7 +659,11 @@ describe Puppet::Provider::Pacemaker do
     <operations>
       <op id='p_rabbitmq-server-demote-0' interval='0' name='demote' timeout='60'/>
       <op id='p_rabbitmq-server-monitor-27' interval='27' name='monitor' role='Master' timeout='60'/>
-      <op id='p_rabbitmq-server-monitor-30' interval='30' name='monitor' timeout='60'/>
+      <op id='p_rabbitmq-server-monitor-30' interval='30' name='monitor' timeout='60'>
+        <instance_attributes id='p_rabbitmq-server-monitor-30-instance_attributes'>
+          <nvpair id='p_rabbitmq-server-monitor-30-instance_attributes-OCF_CHECK_LEVEL' name='OCF_CHECK_LEVEL' value='30'/>
+        </instance_attributes>
+      </op>
       <op id='p_rabbitmq-server-notify-0' interval='0' name='notify' timeout='60'/>
       <op id='p_rabbitmq-server-promote-0' interval='0' name='promote' timeout='120'/>
       <op id='p_rabbitmq-server-start-0' interval='0' name='start' timeout='120'/>

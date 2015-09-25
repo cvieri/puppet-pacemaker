@@ -33,6 +33,7 @@ Puppet::Type.type(:pcmk_property).provide(:ruby, :parent => Puppet::Provider::Pa
 
   def self.prefetch(catalog_instances)
     debug 'Call: self.prefetch'
+    return unless pacemaker_options[:prefetch]
     discovered_instances = instances
     discovered_instances.each do |instance|
       next unless catalog_instances.key? instance.name

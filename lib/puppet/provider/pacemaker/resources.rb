@@ -147,6 +147,9 @@ module Pacemaker
       @primitives_structure
     end
 
+    # parse the operations structure of a primitive
+    # @param operations_element [REXML::Element]
+    # @return [Hash]
     def parse_operations(operations_element)
       return unless operations_element.is_a? REXML::Element
       operations = {}

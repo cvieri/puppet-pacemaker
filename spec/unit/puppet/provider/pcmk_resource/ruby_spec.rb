@@ -265,9 +265,6 @@ describe Puppet::Type.type(:pcmk_resource).provider(:ruby) do
       resource[:parameters] = {
           'a' => '1',
       }
-      resource[:metadata] = {
-          'target-role' => 'Started',
-      }
       resource[:complex_type] = 'clone'
       resource[:complex_metadata] = {
           'interleave' => 'true',
@@ -282,9 +279,6 @@ describe Puppet::Type.type(:pcmk_resource).provider(:ruby) do
     <instance_attributes id='my_resource-instance_attributes'>
       <nvpair id='my_resource-instance_attributes-a' name='a' value='1'/>
     </instance_attributes>
-    <meta_attributes id='my_resource-meta_attributes'>
-      <nvpair id='my_resource-meta_attributes-target-role' name='target-role' value='Started'/>
-    </meta_attributes>
     <operations>
       <op id='my_resource-monitor-20' interval='20' name='monitor'/>
     </operations>
@@ -351,8 +345,8 @@ describe Puppet::Type.type(:pcmk_resource).provider(:ruby) do
     </meta_attributes>
     <operations>
       <op id='p_rabbitmq-server-demote-0' interval='0' name='demote' timeout='60'/>
+      <op id='p_rabbitmq-server-monitor-27' interval='27' name='monitor' role='Master' timeout='60'/>
       <op id='p_rabbitmq-server-monitor-30' interval='30' name='monitor' timeout='60'/>
-      <op id='p_rabbitmq-server-monitor-Master-27' interval='27' name='monitor' role='Master' timeout='60'/>
       <op id='p_rabbitmq-server-notify-0' interval='0' name='notify' timeout='60'/>
       <op id='p_rabbitmq-server-promote-0' interval='0' name='promote' timeout='120'/>
       <op id='p_rabbitmq-server-start-0' interval='0' name='start' timeout='120'/>
@@ -383,8 +377,8 @@ describe Puppet::Type.type(:pcmk_resource).provider(:ruby) do
   </meta_attributes>
   <operations>
     <op id='p_rabbitmq-server-demote-0' interval='0' name='demote' timeout='60'/>
+    <op id='p_rabbitmq-server-monitor-27' interval='27' name='monitor' role='Master' timeout='60'/>
     <op id='p_rabbitmq-server-monitor-30' interval='30' name='monitor' timeout='60'/>
-    <op id='p_rabbitmq-server-monitor-Master-27' interval='27' name='monitor' role='Master' timeout='60'/>
     <op id='p_rabbitmq-server-notify-0' interval='0' name='notify' timeout='60'/>
     <op id='p_rabbitmq-server-promote-0' interval='0' name='promote' timeout='120'/>
     <op id='p_rabbitmq-server-start-0' interval='0' name='start' timeout='120'/>

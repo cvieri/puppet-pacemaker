@@ -77,3 +77,6 @@
 
 # cleanup primitive only if it has failures
 :cleanup_only_if_failures: true
+
+# use prefetch in the providers
+:prefetch: true
