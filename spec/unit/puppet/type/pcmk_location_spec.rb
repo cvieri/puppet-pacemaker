@@ -200,6 +200,7 @@ describe Puppet::Type.type(:pcmk_location) do
                 })
       end
     end
+<<<<<<< HEAD
 
     context '#autorequire' do
       it 'should autorequire the corresponding resources' do
@@ -222,6 +223,8 @@ describe Puppet::Type.type(:pcmk_location) do
         expect([pcmk_resource]).to include required_resources.first.source
       end
     end
+=======
+>>>>>>> 96d4fc04c8f0514d6113641cfca826ccda8d3aa1
   end
 
 end

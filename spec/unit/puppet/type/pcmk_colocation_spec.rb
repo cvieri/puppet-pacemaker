@@ -63,6 +63,7 @@ describe Puppet::Type.type(:pcmk_colocation) do
              )[:score]).to eq 'INFINITY'
     end
 
+<<<<<<< HEAD
     describe 'when autorequiring resources' do
       before :each do
         @pcmk_resource_1 = Puppet::Type.type(:pcmk_resource).new(
@@ -93,5 +94,7 @@ describe Puppet::Type.type(:pcmk_colocation) do
         end
       end
     end
+=======
+>>>>>>> 96d4fc04c8f0514d6113641cfca826ccda8d3aa1
   end
 end
