@@ -61,6 +61,38 @@ describe Puppet::Type.type(:pcmk_order) do
                  :score => 'inf'
              )[:score]).to eq 'INFINITY'
     end
+
+    describe 'when autorequiring resources' do
+      before :each do
+        @pcmk_resource_1 = Puppet::Type.type(:pcmk_resource).new(
+            :name => 'foo',
+            :ensure => :present,
+        )
+        @pcmk_resource_2 = Puppet::Type.type(:pcmk_resource).new(
+            :name => 'bar',
+            :ensure => :present,
+        )
+        @catalog = Puppet::Resource::Catalog.new
+        @catalog.add_resource @pcmk_resource_1, @pcmk_resource_2
+      end
+
+      it 'should autorequire the corresponding resources' do
+        @resource = described_class.new(
+            :name => 'dummy',
+            :first => 'foo',
+            :second => 'bar',
+            :score => 'inf',
+        )
+        @catalog.add_resource @resource
+        required_resources = @resource.autorequire
+        expect(required_resources.size).to eq 2
+        required_resources.each do |e|
+          expect(e.target).to eq @resource
+          expect([@pcmk_resource_1, @pcmk_resource_2]).to include e.source
+        end
+      end
+    end
+
   end
 
 end

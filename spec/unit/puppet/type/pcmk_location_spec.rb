@@ -200,6 +200,28 @@ describe Puppet::Type.type(:pcmk_location) do
                 })
       end
     end
+
+    context '#autorequire' do
+      it 'should autorequire the corresponding resources' do
+        pcmk_resource = Puppet::Type.type(:pcmk_resource).new(
+          :name => 'my_primitive',
+          :ensure => :present,
+        )
+        catalog = Puppet::Resource::Catalog.new
+        catalog.add_resource pcmk_resource
+        pcmk_location = Puppet::Type.type(:pcmk_location).new(
+          :name => 'mock_resource',
+          :primitive => 'my_primitive',
+          :node => 'node',
+          :score => 'inf'
+        )
+        catalog.add_resource pcmk_location
+        required_resources = pcmk_location.autorequire
+        expect(required_resources.size).to eq 1
+        expect(required_resources.first.target).to eq pcmk_location
+        expect([pcmk_resource]).to include required_resources.first.source
+      end
+    end
   end
 
 end
