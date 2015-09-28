@@ -79,5 +79,4 @@ end
 # TODO: pcmk_resource convert complex to simple and back
 # TODO: pcmk_resource add utilization support
 # TODO: cleanup unused methods from pcmk_nodes provider
-# TODO: unit tests for location, colocation, order autorequire functions
 # TODO: change tests behaviour according to the options and test several possible options
