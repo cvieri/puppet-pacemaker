@@ -62,8 +62,12 @@ module Puppet
 
     autorequire(:pcmk_resource) do
       resources = []
+<<<<<<< HEAD
       resources << primitive_base_name(self[:first]) if self[:first]
       resources << primitive_base_name(self[:second]) if self[:second]
+=======
+      resources << primitive_base_name(self[:primitive]) if self[:primitive]
+>>>>>>> 96d4fc04c8f0514d6113641cfca826ccda8d3aa1
       debug "Autorequire pcmk_resources: #{resources.join ', '}" if resources.any?
       resources
     end

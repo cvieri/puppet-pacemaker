@@ -94,5 +94,4 @@ describe Puppet::Type.type(:pcmk_order) do
     end
 
   end
-
 end
