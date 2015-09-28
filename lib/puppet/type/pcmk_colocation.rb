@@ -69,6 +69,5 @@ module Puppet
       debug "Autorequire pcmk_resources: #{resources.join ', '}" if resources.any?
       resources
     end
-
   end
 end
